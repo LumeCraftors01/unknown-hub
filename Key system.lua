@@ -1,44 +1,184 @@
--- Improved Platoboost Key System with Enhanced UI and Feedback
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local StarterGui = game:GetService("StarterGui")
+local HttpService = game:GetService("HttpService")
 
-local service = 4599 -- Platoboost Service ID local secret = "32cb930f-f6cb-45ea-ad13-aefd18307edc" -- Platoboost Secret local useNonce = true
+-- Services & Keys
+local service = 4599
+local secret = "32cb930f-f6cb-45ea-ad13-aefd18307edc"
+local useNonce = true
 
-local HttpService = game:GetService("HttpService") local Players = game:GetService("Players") local StarterGui = game:GetService("StarterGui")
+local fClipboard = setclipboard or toclipboard
+local fRequest = request or http_request
+local fGetHwid = gethwid or function() return tostring(player.UserId) end
 
-repeat task.wait() until game:IsLoaded() and Players.LocalPlayer local player = Players.LocalPlayer
+local function lDigest(s)
+	local h = {}
+	for i = 1, #s do table.insert(h, ('%02x'):format(s:byte(i))) end
+	return table.concat(h)
+end
 
--- Safe Function Aliases local fSetClipboard = setclipboard or toclipboard local fRequest = request or http_request local fGetHwid = gethwid or function() return player.UserId end
+local function onMessage(msg)
+	StarterGui:SetCore("ChatMakeSystemMessage", {
+		Text = "[KeySystem] " .. msg,
+		Color = Color3.fromRGB(0, 255, 150)
+	})
+end
 
--- Helper Functions local function lEncode(data) return HttpService:JSONEncode(data) end
+local function jEncode(t) return HttpService:JSONEncode(t) end
+local function jDecode(t) return HttpService:JSONDecode(t) end
 
-local function lDecode(data) return HttpService:JSONDecode(data) end
+-- API Host Selection
+local host = "https://api.platoboost.com"
+local test = fRequest({ Url = host .. "/public/connectivity", Method = "GET" })
+if not test or test.StatusCode ~= 200 then
+	host = "https://api.platoboost.net"
+end
 
-local function lDigest(input) local hash = {} for i = 1, #input do table.insert(hash, string.byte(input, i)) end local hex = "" for _, byte in ipairs(hash) do hex = hex .. string.format("%02x", byte) end return hex end
+local cache, lastFetch = "", 0
+function fetchLink()
+	if tick() > lastFetch + 600 then
+		local res = fRequest({
+			Url = host .. "/public/start",
+			Method = "POST",
+			Body = jEncode({ service = service, identifier = lDigest(fGetHwid()) }),
+			Headers = { ["Content-Type"] = "application/json" }
+		})
+		if res and res.StatusCode == 200 then
+			local d = jDecode(res.Body)
+			if d.success then
+				cache = d.data.url
+				lastFetch = tick()
+				return true, cache
+			else
+				onMessage(d.message)
+			end
+		else
+			onMessage("Error connecting to server.")
+		end
+	else
+		return true, cache
+	end
+	return false, nil
+end
 
-local function onMessage(msg) StarterGui:SetCore("ChatMakeSystemMessage", { Text = "[KeySystem] " .. msg; Color = Color3.new(0.6, 1, 0.6) }) end
+function copyLink()
+	local ok, link = fetchLink()
+	if ok then
+		fClipboard(link)
+		onMessage("✅ Key link copied!")
+	end
+end
 
--- API Host Resolver local host = "https://api.platoboost.com" local test = fRequest({ Url = host .. "/public/connectivity", Method = "GET" }) if test.StatusCode ~= 200 then host = "https://api.platoboost.net" end
+function verifyKey(key)
+	local nonce = useNonce and lDigest(tostring(math.random())) or nil
+	local url = host .. "/public/whitelist/" .. service ..
+		"?identifier=" .. lDigest(fGetHwid()) .. "&key=" .. key ..
+		(nonce and "&nonce=" .. nonce or "")
+	local res = fRequest({ Url = url, Method = "GET" })
+	if res and res.StatusCode == 200 then
+		local d = jDecode(res.Body)
+		return d.success and d.data.valid
+	else
+		onMessage("❌ Invalid key or server error.")
+	end
+	return false
+end
 
--- Clipboard Key Link Caching local cachedLink = "" local cachedTime = 0 local function cacheLink() if tick() > cachedTime + 600 then local res = fRequest({ Url = host .. "/public/start", Method = "POST", Headers = { ["Content-Type"] = "application/json" }, Body = lEncode({ service = service, identifier = lDigest(fGetHwid()) }) }) if res.StatusCode == 200 then local data = lDecode(res.Body) if data.success then cachedLink = data.data.url cachedTime = tick() return true, cachedLink else onMessage(data.message) end else onMessage("Could not get link. Server error.") end else return true, cachedLink end return false, "" end
+-- GUI Setup
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "KeySystemGui"
 
--- Nonce Generator local function generateNonce() local charset = "abcdefghijklmnopqrstuvwxyz" local result = "" for _ = 1, 16 do local rand = math.random(1, #charset) result = result .. charset:sub(rand, rand) end return result end
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 360, 0, 220)
+frame.Position = UDim2.new(0.5, -180, 0.5, -110)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
 
--- Key Functions local function copyKeyLink() local success, link = cacheLink() if success and fSetClipboard then fSetClipboard(link) onMessage("Copied key link to clipboard!") else onMessage("Failed to copy key link.") end end
+local corner = Instance.new("UICorner", frame)
+corner.CornerRadius = UDim.new(0, 12)
 
-local function verifyKey(key) local nonce = generateNonce() local url = host .. "/public/whitelist/" .. tostring(service) .. "?identifier=" .. lDigest(fGetHwid()) .. "&key=" .. key if useNonce then url = url .. "&nonce=" .. nonce end local res = fRequest({ Url = url, Method = "GET" }) if res.StatusCode == 200 then local data = lDecode(res.Body) return data.success and data.data.valid else onMessage("Verification failed.") return false end end
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Text = "🔐 Key System"
+title.Font = Enum.Font.GothamBold
+title.TextColor3 = Color3.new(1, 1, 1)
+title.BackgroundTransparency = 1
 
--- GUI Setup local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui")) local frame = Instance.new("Frame", gui) frame.Size = UDim2.fromOffset(360, 220) frame.Position = UDim2.new(0.5, -180, 0.5, -110) frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40) frame.BorderSizePixel = 0 frame.Name = "KeySystemUI"
+local input = Instance.new("TextBox", frame)
+input.PlaceholderText = "Enter key here..."
+input.Size = UDim2.new(0.9, 0, 0, 40)
+input.Position = UDim2.new(0.05, 0, 0.28, 0)
+input.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+input.TextColor3 = Color3.new(1, 1, 1)
+input.Font = Enum.Font.Gotham
+input.ClearTextOnFocus = false
+Instance.new("UICorner", input).CornerRadius = UDim.new(0, 8)
 
-local title = Instance.new("TextLabel", frame) title.Text = "🔑 Enter Key" title.Size = UDim2.new(1, 0, 0, 40) title.TextScaled = true title.BackgroundColor3 = Color3.fromRGB(20, 20, 20) title.TextColor3 = Color3.fromRGB(255, 255, 255) title.Font = Enum.Font.GothamBold
+-- Buttons
+local copyBtn = Instance.new("TextButton", frame)
+copyBtn.Text = "📋 Get Key"
+copyBtn.Size = UDim2.new(0.4, 0, 0, 35)
+copyBtn.Position = UDim2.new(0.05, 0, 0.65, 0)
+copyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+copyBtn.Font = Enum.Font.GothamMedium
+copyBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", copyBtn).CornerRadius = UDim.new(0, 8)
 
-local input = Instance.new("TextBox", frame) input.PlaceholderText = "Paste your key here..." input.Size = UDim2.new(0.9, 0, 0, 40) input.Position = UDim2.new(0.05, 0, 0.25, 0) input.Font = Enum.Font.Gotham input.TextSize = 18 input.TextColor3 = Color3.new(1, 1, 1) input.BackgroundColor3 = Color3.fromRGB(60, 60, 60) input.ClearTextOnFocus = false
+local checkBtn = Instance.new("TextButton", frame)
+checkBtn.Text = "✅ Check Key"
+checkBtn.Size = UDim2.new(0.5, 0, 0, 35)
+checkBtn.Position = UDim2.new(0.5, -5, 0.65, 0)
+checkBtn.BackgroundColor3 = Color3.fromRGB(40, 180, 90)
+checkBtn.Font = Enum.Font.GothamBold
+checkBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", checkBtn).CornerRadius = UDim.new(0, 8)
 
-local copyBtn = Instance.new("TextButton", frame) copyBtn.Text = "📋 Get Key" copyBtn.Size = UDim2.new(0.4, 0, 0, 35) copyBtn.Position = UDim2.new(0.05, 0, 0.6, 0) copyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45) copyBtn.TextColor3 = Color3.new(1, 1, 1) copyBtn.Font = Enum.Font.GothamSemibold
+-- Spinner / Loading Indicator
+local loading = Instance.new("TextLabel", frame)
+loading.Size = UDim2.new(1, 0, 0, 25)
+loading.Position = UDim2.new(0, 0, 0.9, 0)
+loading.Text = ""
+loading.Font = Enum.Font.Gotham
+loading.TextColor3 = Color3.fromRGB(200, 200, 255)
+loading.BackgroundTransparency = 1
 
-local checkBtn = Instance.new("TextButton", frame) checkBtn.Text = "✅ Check Key" checkBtn.Size = UDim2.new(0.5, 0, 0, 35) checkBtn.Position = UDim2.new(0.5, -5, 0.6, 0) checkBtn.BackgroundColor3 = Color3.fromRGB(35, 180, 70) checkBtn.TextColor3 = Color3.new(1, 1, 1) checkBtn.Font = Enum.Font.GothamSemibold
+local spinnerRunning = false
+local function startSpinner()
+	spinnerRunning = true
+	coroutine.wrap(function()
+		local phases = { "|", "/", "—", "\\" }
+		local i = 1
+		while spinnerRunning do
+			loading.Text = "🔄 Verifying... " .. phases[i]
+			i = (i % #phases) + 1
+			wait(0.15)
+		end
+		loading.Text = ""
+	end)()
+end
 
--- GUI Logic copyBtn.MouseButton1Click:Connect(copyKeyLink)
+-- Button Functions
+copyBtn.MouseButton1Click:Connect(copyLink)
 
-checkBtn.MouseButton1Click:Connect(function() local key = input.Text if key == "" then onMessage("Please enter a key.") return end if verifyKey(key) then onMessage("✅ Key Valid! Loading...") loadstring(game:HttpGet("https://raw.githubusercontent.com/LumeCraftors01/unknown-hub/refs/heads/main/Loaderv1.lua"))() else onMessage("❌ Invalid Key.") end end)
+checkBtn.MouseButton1Click:Connect(function()
+	local key = input.Text
+	if key == "" then
+		onMessage("Please enter a key.")
+		return
+	end
 
--- Optional Draggable Frame local dragging, dragInput, dragStart, startPos = false, nil, nil, nil frame.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true dragStart = input.Position startPos = frame.Position input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end) end end) frame.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end end) game:GetService("UserInputService").InputChanged:Connect(function(input) if input == dragInput and dragging then local delta = input.Position - dragStart frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
+	startSpinner()
+	local success = verifyKey(key)
+	spinnerRunning = false
 
+	if success then
+		onMessage("✅ Key Verified! Loading...")
+		task.wait(0.5)
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/LumeCraftors01/unknown-hub/main/Loaderv1.lua"))()
+	else
+		onMessage("❌ Invalid key.")
+	end
+end)
