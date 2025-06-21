@@ -1,5 +1,5 @@
 -- **Loader**
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 -- **Basic Information**
 local CurrentName = "unknown Hub v1"
@@ -26,12 +26,12 @@ local CurrentVersion = LoadVersion()
 -- **Create UI Window**
 local Window = Rayfield:CreateWindow({
     Name = string.format("%s | %s | %s", CurrentName, CurrentGame, CurrentVersion),
-    Icon = 0,
+    Icon = 0, -- You can change this to an asset ID if needed
     Theme = "Dark"
 })
 
 -- **Home Tab**
-local HomeTab = Window:CreateTab("Home", "1000013070")
+local HomeTab = Window:CreateTab("Home", "Home")
 HomeTab:CreateSection("📌 Support")
 
 HomeTab:CreateButton({
@@ -53,7 +53,7 @@ HomeTab:CreateParagraph({
 })
 
 -- **Settings Tab**
-local SettingTab = Window:CreateTab("Settings", "1000013069")
+local SettingTab = Window:CreateTab("Settings", "Settings")
 SettingTab:CreateSection("📝 Configuration")
 
 SettingTab:CreateButton({
@@ -68,10 +68,10 @@ SettingTab:CreateButton({
     end
 })
 
--- **Function to Check for Updates**
+-- **Check for Updates**
 local function CheckForUpdate()
     local success, response = pcall(function()
-        return game:HttpGet("https://raw.githubusercontent.com/LumeCraftors01/unknown-hub/refs/heads/main/Just%20a%20baseplate/Version")
+        return game:HttpGet("https://raw.githubusercontent.com/glitchstikers/Testscript-/main/Version.lua")
     end)
 
     if success and response then
@@ -97,19 +97,19 @@ end
 task.spawn(function()
     while true do
         CheckForUpdate()
-        task.wait(30) -- Check every 30 seconds
+        task.wait(30) -- Every 30 seconds
     end
 end)
 
--- **Check Immediately on Load**
+-- **Initial Update Check**
 CheckForUpdate()
 
--- **Auto Load Configuration**
+-- **Auto Load Config**
 pcall(function()
     Rayfield:LoadConfiguration()
 end)
 
--- **AutoSave (Optional to use in future)**
+-- **Optional AutoSave Function**
 local function AutoSave()
     pcall(function()
         Rayfield:SaveConfiguration()
