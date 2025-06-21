@@ -18,6 +18,10 @@ local function lDigest(s)
 	return table.concat(h)
 end
 
+local function jEncode(t) return HttpService:JSONEncode(t) end
+local function jDecode(t) return HttpService:JSONDecode(t) end
+
+-- Notifications
 local function onMessage(msg)
 	StarterGui:SetCore("ChatMakeSystemMessage", {
 		Text = "[KeySystem] " .. msg,
@@ -25,10 +29,7 @@ local function onMessage(msg)
 	})
 end
 
-local function jEncode(t) return HttpService:JSONEncode(t) end
-local function jDecode(t) return HttpService:JSONDecode(t) end
-
--- API Host Selection
+-- Host Detection
 local host = "https://api.platoboost.com"
 local test = fRequest({ Url = host .. "/public/connectivity", Method = "GET" })
 if not test or test.StatusCode ~= 200 then
@@ -88,17 +89,18 @@ end
 -- GUI Setup
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "KeySystemGui"
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 360, 0, 220)
-frame.Position = UDim2.new(0.5, -180, 0.5, -110)
+frame.Size = UDim2.new(0, 360, 0, 230)
+frame.Position = UDim2.new(0.5, -180, 0.5, -115)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
-
-local corner = Instance.new("UICorner", frame)
-corner.CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+Instance.new("UIStroke", frame).Color = Color3.fromRGB(255, 255, 255)
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 40)
@@ -117,7 +119,6 @@ input.Font = Enum.Font.Gotham
 input.ClearTextOnFocus = false
 Instance.new("UICorner", input).CornerRadius = UDim.new(0, 8)
 
--- Buttons
 local copyBtn = Instance.new("TextButton", frame)
 copyBtn.Text = "📋 Get Key"
 copyBtn.Size = UDim2.new(0.4, 0, 0, 35)
@@ -136,7 +137,6 @@ checkBtn.Font = Enum.Font.GothamBold
 checkBtn.TextColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", checkBtn).CornerRadius = UDim.new(0, 8)
 
--- Spinner / Loading Indicator
 local loading = Instance.new("TextLabel", frame)
 loading.Size = UDim2.new(1, 0, 0, 25)
 loading.Position = UDim2.new(0, 0, 0.9, 0)
@@ -145,6 +145,7 @@ loading.Font = Enum.Font.Gotham
 loading.TextColor3 = Color3.fromRGB(200, 200, 255)
 loading.BackgroundTransparency = 1
 
+-- Spinner
 local spinnerRunning = false
 local function startSpinner()
 	spinnerRunning = true
@@ -154,27 +155,31 @@ local function startSpinner()
 		while spinnerRunning do
 			loading.Text = "🔄 Verifying... " .. phases[i]
 			i = (i % #phases) + 1
-			wait(0.15)
+			task.wait(0.15)
 		end
 		loading.Text = ""
 	end)()
 end
 
--- Button Functions
+-- Save & Load Key (LocalStorage)
+pcall(function()
+	local saved = getgenv().SavedKey or nil
+	if saved then input.Text = saved end
+end)
+
+-- Actions
 copyBtn.MouseButton1Click:Connect(copyLink)
 
 checkBtn.MouseButton1Click:Connect(function()
 	local key = input.Text
-	if key == "" then
-		onMessage("Please enter a key.")
-		return
-	end
+	if key == "" then return onMessage("Please enter a key.") end
 
 	startSpinner()
 	local success = verifyKey(key)
 	spinnerRunning = false
 
 	if success then
+		getgenv().SavedKey = key
 		onMessage("✅ Key Verified! Loading...")
 		task.wait(0.5)
 		loadstring(game:HttpGet("https://raw.githubusercontent.com/LumeCraftors01/unknown-hub/main/Loaderv1.lua"))()
