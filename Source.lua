@@ -4,18 +4,16 @@ local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 -- Load Services
 local HttpService = game:GetService("HttpService")
 
--- Platoboost API Implementation
+-- Platoboost API Library (complete)
 local Platoboost = {}
 
 Platoboost.APIBase = "https://api.platoboost.com"
-Platoboost.Secret = "32cb930f-f6cb-45ea-ad13-aefd18307edc" -- Replace this
+Platoboost.Secret = "32cb930f-f6cb-45ea-ad13-aefd18307edc"
 Platoboost.HWID = game:GetService("RbxAnalyticsService"):GetClientId()
 
--- Service name and main hub loader URL
-local ServiceName = "unknown hub"
-local MainScriptURL = "https://raw.githubusercontent.com/LumeCraftors01/unknown-hub/refs/heads/main/Loaderv1.lua" -- Replace with your hub script URL
+local ServiceName = "minenhack"
+local MainScriptURL = "https://raw.githubusercontent.com/LumeCraftors01/unknown-hub/refs/heads/main/Loaderv1.lua"
 
--- Get Platoboost Key Link
 function Platoboost:GetServiceLink(service)
     local url = string.format("%s/public/start?service=%s", self.APIBase, service)
     local response = game:HttpGet(url)
@@ -23,7 +21,6 @@ function Platoboost:GetServiceLink(service)
     return data.link or "Link not found."
 end
 
--- Check Active Key on HWID
 function Platoboost:CheckKey(service)
     local url = string.format("%s/public/keys/%s?hwid=%s", self.APIBase, service, self.HWID)
     local success, result = pcall(function()
@@ -36,27 +33,15 @@ function Platoboost:CheckKey(service)
     end
 end
 
--- Redeem Key
 function Platoboost:RedeemKey(service, userKey)
     local url = string.format("%s/public/redeem/%s", self.APIBase, service)
-    local body = HttpService:JSONEncode({
-        key = userKey,
-        hwid = self.HWID
-    })
-    local headers = {
-        ["Content-Type"] = "application/json"
-    }
+    local body = HttpService:JSONEncode({ key = userKey, hwid = self.HWID })
+    local headers = {["Content-Type"] = "application/json"}
 
     local response = syn and syn.request({
-        Url = url,
-        Method = "POST",
-        Headers = headers,
-        Body = body
+        Url = url, Method = "POST", Headers = headers, Body = body
     }) or http_request({
-        Url = url,
-        Method = "POST",
-        Headers = headers,
-        Body = body
+        Url = url, Method = "POST", Headers = headers, Body = body
     })
 
     if response.Success then
@@ -69,6 +54,34 @@ function Platoboost:RedeemKey(service, userKey)
     else
         return false, "HTTP Error."
     end
+end
+
+function Platoboost:GetFlags(service)
+    local url = string.format("%s/public/flags/%s?hwid=%s", self.APIBase, service, self.HWID)
+    local success, result = pcall(function()
+        return HttpService:JSONDecode(game:HttpGet(url))
+    end)
+    if success and result.success and result.flags then
+        return result.flags
+    else
+        return nil, result and result.message or "Could not fetch flags."
+    end
+end
+
+function Platoboost:DeleteKey(service)
+    local url = string.format("%s/public/deletekey/%s?hwid=%s", self.APIBase, service, self.HWID)
+    local success, result = pcall(function()
+        return HttpService:JSONDecode(game:HttpGet(url))
+    end)
+    if success and result.success then
+        return true, result.message or "Key unbound."
+    else
+        return false, result and result.message or "Failed to unbind key."
+    end
+end
+
+function Platoboost:GetHWID()
+    return self.HWID
 end
 
 -- Create Window
@@ -86,9 +99,11 @@ local Window = Rayfield:CreateWindow({
 -- Key Tab UI
 local KeyTab = Window:CreateTab("🔑 Key System", 4483362458)
 
-KeyTab:CreateParagraph({
+local GeneratedLink = Platoboost:GetServiceLink(ServiceName)
+
+local LinkParagraph = KeyTab:CreateParagraph({
     Title = "Get Your Key",
-    Content = "Press 'Copy Key Link' to get your key from the site."
+    Content = "Key Link:\n" .. GeneratedLink
 })
 
 local KeyInput = KeyTab:CreateInput({
@@ -101,10 +116,9 @@ local KeyInput = KeyTab:CreateInput({
 })
 
 KeyTab:CreateButton({
-    Name = "Copy Key Link",
+    Name = "📋 Copy Key Link",
     Callback = function()
-        local link = Platoboost:GetServiceLink(ServiceName)
-        setclipboard(link)
+        setclipboard(GeneratedLink)
         Rayfield:Notify({
             Title = "Copied!",
             Content = "Key link copied to clipboard.",
@@ -114,7 +128,7 @@ KeyTab:CreateButton({
 })
 
 KeyTab:CreateButton({
-    Name = "Redeem Key",
+    Name = "✅ Redeem Key",
     Callback = function()
         if not _G.CurrentKey then
             Rayfield:Notify({
@@ -136,6 +150,46 @@ KeyTab:CreateButton({
             Rayfield:Notify({
                 Title = "Invalid Key",
                 Content = result,
+                Duration = 3
+            })
+        end
+    end
+})
+
+KeyTab:CreateButton({
+    Name = "🎌 Show Flags (Debug)",
+    Callback = function()
+        local flags, msg = Platoboost:GetFlags(ServiceName)
+        if flags then
+            Rayfield:Notify({
+                Title = "Your Flags",
+                Content = table.concat(flags, ", "),
+                Duration = 5
+            })
+        else
+            Rayfield:Notify({
+                Title = "No Flags",
+                Content = msg or "None assigned.",
+                Duration = 3
+            })
+        end
+    end
+})
+
+KeyTab:CreateButton({
+    Name = "❌ Unbind/Delete Key",
+    Callback = function()
+        local ok, msg = Platoboost:DeleteKey(ServiceName)
+        if ok then
+            Rayfield:Notify({
+                Title = "Key Deleted",
+                Content = msg,
+                Duration = 3
+            })
+        else
+            Rayfield:Notify({
+                Title = "Delete Failed",
+                Content = msg,
                 Duration = 3
             })
         end
