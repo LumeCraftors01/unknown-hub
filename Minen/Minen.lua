@@ -1,44 +1,70 @@
--- Load Rayfield
+-- Load Rayfield UI Library
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
--- Hub Info
-local HubName, GameName, CurrentVersion = "Unknown Hub v1", "Minen ⛏️", "v1.0"
-local DefaultVersion, VersionFile = CurrentVersion, "unknown_Version.txt"
+-- Basic Info
+local CurrentName = "unknown Hub"
+local CurrentGame = "Minen update v1 ⛏️"
+local DefaultVersion = "v1.0"
+local VersionFile = "unknown_Version.txt"
 
--- Create Window
+-- Persistent Version Storage
+local function LoadVersion()
+    if isfile(VersionFile) then
+        return readfile(VersionFile):match("^%s*(.-)%s*$") or DefaultVersion
+    else
+        return DefaultVersion
+    end
+end
+
+local function SaveVersion(version)
+    writefile(VersionFile, version)
+end
+
+local CurrentVersion = LoadVersion()
+
+-- Create Main Window
 local Window = Rayfield:CreateWindow({
-    Name = string.format("%s | %s | %s", HubName, GameName, CurrentVersion),
+    Name = string.format("%s | %s | %s", CurrentName, CurrentGame, CurrentVersion),
     LoadingTitle = "Loading Unknown Hub...",
     LoadingSubtitle = "By Unknown Team",
     ShowText = "unknown hub",
     Icon = "hammer",
-    Theme = "Dark"
+    Theme = "Dark",
+    
+    ConfigurationSaving = {
+      Enabled = true,
+      FolderName = minen, 
+      FileName = "unknown hub"
+   },
+
+   Discord = {
+      Enabled = true, 
+      Invite = "noinvitelink", 
+      RememberJoins = true 
+   }
 })
 
 -- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local Functions, Events = Remotes.Functions, Remotes.Events
-local BuyItem, TryCastPile = Functions.BuyItem, Functions.TryCastPile
-local MiningRemote, DialogueProgress = Events.MiningRemote, Events.DialogueProgress
+local BuyItem = Functions.BuyItem
+local TryCastPile = Functions.TryCastPile
+local MiningRemote = Events.MiningRemote
+local DialogueProgress = Events.DialogueProgress
 
--- Persistent Version
-local function LoadVersion()
-    return isfile(VersionFile) and readfile(VersionFile):match("^%s*(.-)%s*$") or DefaultVersion
-end
-local function SaveVersion(v) writefile(VersionFile, v) end
-CurrentVersion = LoadVersion()
-
--- 📌 1️⃣ Main Tab
+-- 📌 Main Tab
 local MainTab = Window:CreateTab("Main", "home")
-MainTab:CreateSection("About & Links")
-
+MainTab:CreateParagraph({
+    Title = "Information 📚",
+    Content = "will your experience to enjoy and easy 🍫."
+})
 MainTab:CreateButton({
     Name = "ℹ️ About",
     Callback = function()
         Rayfield:Notify({
             Title = "About",
-            Content = HubName.." for "..GameName.." — reliable farming hub.",
+            Content = CurrentName.." for "..CurrentGame.." — easy to use and easy to get and will your experience to be easy 🎉.",
             Duration = 5
         })
     end
@@ -48,7 +74,11 @@ MainTab:CreateButton({
     Name = "📋 Copy Discord Link",
     Callback = function()
         setclipboard("https://discord.gg/yourlinkhere")
-        Rayfield:Notify({Title="Copied",Content="Discord link copied.",Duration=4})
+        Rayfield:Notify({
+            Title = "Copied",
+            Content = "Discord link copied.",
+            Duration = 4
+        })
     end
 })
 
@@ -57,18 +87,28 @@ MainTab:CreateParagraph({
     Content = "Use this at your own risk. We are not responsible for bans."
 })
 
--- 📌 2️⃣ Farm Tab
+-- 📌 Farm Tab
 local FarmTab = Window:CreateTab("Farm", "pickaxe")
-local autoFarm, autoSell, digSpeed = false, false, 0.3
+local autoFarm, autoSell, sellSpeed, digSpeed = false, false, 1, 0.3
 local statusLabel = FarmTab:CreateLabel("Status: Idle")
+
+FarmTab:CreateSection("Farming 🧺")
+
+FarmTab:CreateParagraph({
+    Title = "Recommended Speed 💰",
+    Content = "0.15 is the best speed for grinding."
+})
 
 FarmTab:CreateSlider({
     Name = "Dig Speed (s)", Range = {0.1, 2}, Increment = 0.05, CurrentValue = digSpeed,
+    Flag = "autofarmsr",
     Callback = function(v) digSpeed = v end
 })
 
 FarmTab:CreateToggle({
-    Name = "🔥 AutoFarm", CurrentValue = false,
+    Name = "🔥 AutoFarm",
+    CurrentValue = false,
+    Flag = "autofarms",
     Callback = function(state)
         autoFarm = state
         statusLabel:Set(state and "Status: AutoFarm Running" or "Status: Idle")
@@ -80,7 +120,7 @@ FarmTab:CreateToggle({
                         task.wait(digSpeed)
                         MiningRemote:FireServer("PlayRaritySound")
                         for _, p in ipairs({2, 59.66, 100}) do
-                            MiningRemote:FireServer("OnPileProgress", {Progress=p,TargetMinigame=true})
+                            MiningRemote:FireServer("OnPileProgress", {Progress=p, TargetMinigame=true})
                             task.wait(digSpeed)
                         end
                         for _=1,3 do
@@ -97,30 +137,57 @@ FarmTab:CreateToggle({
     end
 })
 
+FarmTab:CreateSection("Sell/auto 🪙")
+FarmTab:CreateParagraph({
+    Title = "📢 recommended speed",
+    Content = "recommended speed is 0.6 faster and good experience no lag and erros. 🔥"
+})
+
+FarmTab:CreateSlider({
+    Name = "🕒 AutoSell Speed (s)",
+    Range = {0.1, 5},
+    Increment = 0.1,
+    CurrentValue = sellSpeed,
+    Flag = "sellallsr",
+    Callback = function(value)
+        sellSpeed = value
+    end
+})
+
+FarmTab:CreateParagraph({
+    Title = "📦 Important Thing to Know",
+    Content = "✅ Make sure you close to the Sell NPC and keep open the sell dont close that and open the autofarm/autosell that will working and if you dont do this the auto sell not working "
+})
 FarmTab:CreateToggle({
-    Name = "💰 Auto Sell", CurrentValue = false,
-    Callback = function(state)
-        autoSell = state
+    Name="💰 AutoSell",CurrentValue=false,
+    Flag = "sellalls",
+    Callback=function(state)
+        autoSell=state
         Rayfield:Notify({
-            Title = state and "AutoSell Enabled" or "AutoSell Disabled",
-            Content = state and "Selling ores automatically." or "Auto selling stopped.",
-            Duration = 3
+            Title=state and "AutoSell Enabled" or "AutoSell Disabled",
+            Content=state and "Selling ores every "..sellSpeed.."s." or "Auto selling stopped.",
+            Duration=3
         })
         if state then
             task.spawn(function()
                 while autoSell do
-                    for _, npc in ipairs({"Joe Gravel","Mike","Zombie Gravel","Dave Gravel","Aurora"}) do
-                        DialogueProgress:FireServer(npc, "SellAll")
+                    for _,npc in ipairs({"Joe Gravel","Mike","Zombie Gravel","Dave Gravel","Aurora","Walter Silverpalm","Brock","Barak"}) do
+                        DialogueProgress:FireServer(npc,"SellAll")
                     end
-                    task.wait(3)
+                    task.wait(sellSpeed)
                 end
             end)
         end
     end
 })
 
--- 📌 3️⃣ Market Tab
+-- 📌 Market Tab
 local MarketTab = Window:CreateTab("Market", "shopping-bag")
+
+MarketTab:CreateParagraph({
+    Title = "📌 Important",
+    Content = "✅ Make sure you have enough Money and meet the required Level before buying Pickaxes or other items."
+})
 
 -- Pickaxe Market
 MarketTab:CreateSection("Pickaxe Market")
@@ -130,35 +197,19 @@ local PickaxeList = {
     "Jester Pickaxe","Lighthouse Pickaxe","Magma Pickaxe","Frozen Pickaxe","Overseer Pickaxe","Traffic Pickaxe",
     "Trident Pickaxe","Shark Pickaxe"
 }
-
-for _, pickaxeName in ipairs(PickaxeList) do
+for _, pickaxe in ipairs(PickaxeList) do
     MarketTab:CreateButton({
-        Name = "🛒 Buy "..pickaxeName,
+        Name = "🛒 Buy "..pickaxe,
         Callback = function()
-            local success, result = pcall(function()
-                return BuyItem:InvokeServer("Pickaxe", pickaxeName)
-            end)
-            Rayfield:Notify({
-                Title = success and (result == "Success" or result == true) and "✅ Purchase Successful" or "❌ Purchase Failed",
-                Content = success and ("Bought: "..pickaxeName) or ("Failed: "..tostring(result)),
-                Duration = 4
-            })
+            BuyItem:InvokeServer("Pickaxe", pickaxe)
         end
     })
 end
-
 MarketTab:CreateButton({
     Name = "💸 Buy All Pickaxes",
     Callback = function()
-        for _, pickaxeName in ipairs(PickaxeList) do
-            local success, result = pcall(function()
-                return BuyItem:InvokeServer("Pickaxe", pickaxeName)
-            end)
-            Rayfield:Notify({
-                Title = success and (result == "Success" or result == true) and "✅ Bought" or "❌ Failed",
-                Content = pickaxeName,
-                Duration = 3
-            })
+        for _, p in ipairs(PickaxeList) do
+            BuyItem:InvokeServer("Pickaxe", p)
             task.wait(0.2)
         end
     end
@@ -166,70 +217,259 @@ MarketTab:CreateButton({
 
 -- Backpack Market
 MarketTab:CreateSection("Backpack Market")
-local BagList = {
+local BackpackList = {
     "Bucket","Bag","Lunchbox","Ruby Pouch","Pirate Backpack","Duffel's Bag","Mini Vault",
     "Climber Backpack","Chest","Adventurous Backpack","Toxic Backpack","Fusion Backpack","Amethyst Eye"
 }
-
-for _, bagName in ipairs(BagList) do
+for _, bag in ipairs(BackpackList) do
     MarketTab:CreateButton({
-        Name = "🎒 Buy "..bagName,
+        Name = "🎒 Buy "..bag,
         Callback = function()
-            local success, result = pcall(function()
-                return BuyItem:InvokeServer("Backpack", bagName)
-            end)
-            Rayfield:Notify({
-                Title = success and (result == "Success" or result == true) and "✅ Purchase Successful" or "❌ Purchase Failed",
-                Content = success and ("Bought: "..bagName) or ("Failed: "..tostring(result)),
-                Duration = 4
-            })
+            BuyItem:InvokeServer("Backpack", bag)
         end
     })
 end
-
 MarketTab:CreateButton({
     Name = "💸 Buy All Backpacks",
     Callback = function()
-        for _, bagName in ipairs(BagList) do
-            local success, result = pcall(function()
-                return BuyItem:InvokeServer("Backpack", bagName)
-            end)
-            Rayfield:Notify({
-                Title = success and (result == "Success" or result == true) and "✅ Bought" or "❌ Failed",
-                Content = bagName,
-                Duration = 3
-            })
+        for _, b in ipairs(BackpackList) do
+            BuyItem:InvokeServer("Backpack", b)
             task.wait(0.2)
         end
     end
 })
 
--- Version Check
-local VersionURL = "https://raw.githubusercontent.com/LumeCraftors01/unknown-hub/refs/heads/main/Minen/Version.lua"
+-- Vehicle Market
+MarketTab:CreateSection("🚗 Vehicles Market beta")
+local VehicleList = {
+    "Camper Van","Small Truck","Buggy","Pickup","Police Cruiser",
+    "Sports Car","Super Car","Monster Truck","Tank"
+}
+for _, vehicle in ipairs(VehicleList) do
+    MarketTab:CreateButton({
+        Name = "🚗 Buy "..vehicle,
+        Callback = function()
+            BuyItem:InvokeServer("Vehicles", vehicle)
+        end
+    })
+end
+MarketTab:CreateButton({
+    Name = "💸 Buy All Vehicles beta",
+    Callback = function()
+        for _, v in ipairs(VehicleList) do
+            BuyItem:InvokeServer("Vehicles", v)
+            task.wait(0.2)
+        end
+    end
+})
+
+-- 📌 Misc Tab
+local MiscTab = Window:CreateTab("Misc", "book")
+MiscTab:CreateSection("Enchanting")
+MiscTab:CreateParagraph({
+    Title = "📢 important",
+    Content = "Make sure you in enchanting tower and you have Lightning Rune item and night time ⛏️."
+})
+
+local function getNil(name, class)
+    for _, v in next, getnilinstances() do
+        if v.ClassName == class and v.Name == name then
+            return v
+        end
+    end
+end
+
+MiscTab:CreateButton({
+    Name = "⚡ Enchant Lightning Rune",
+    Callback = function()
+        local tool = getNil("Lightning Rune", "Tool")
+        if tool then
+            game.Players.LocalPlayer.EquipTool:InvokeServer(tool)
+            task.wait(3)
+            ReplicatedStorage.Remotes.Functions.TryEnchant:InvokeServer("Lightning Rune")
+            Rayfield:Notify({
+                Title = "✅ Success",
+                Content = "Lightning Rune enchanted!",
+                Duration = 4
+            })
+        else
+            Rayfield:Notify({
+                Title = "❌ Not Found",
+                Content = "Lightning Rune tool not found.",
+                Duration = 4
+            })
+        end
+    end
+})
+
+MiscTab:CreateButton({
+    Name = "🛒 Buy Lightning Rune",
+    Callback = function()
+        local success, result = pcall(function()
+            return BuyItem:InvokeServer("Items", "Lightning Rune", 1)
+        end)
+        task.wait(0.2)
+        if success and (result == true or result == "Success") then
+            Rayfield:Notify({
+                Title = "✅ Purchase Successful",
+                Content = "Bought: Lightning Rune successfully.",
+                Duration = 4
+            })
+        else
+            Rayfield:Notify({
+                Title = "❌ Purchase Failed",
+                Content = "Failed to buy Lightning Rune.",
+                Duration = 4
+            })
+        end
+    end
+})
+
+-- ⚙️ Anti-Admin Detection Settings
+local antiAdminEnabled = false
+local adminAction = "Warn"
+
+MiscTab:CreateParagraph({
+    Title = "📢 about",
+    Content = "this is anti ban for like example if the admin of the game join your server if you on the anti admin and in dropdown if you pick the none nothing do and if pick warning send the warning notification and if you pick leave automatically leave the 🎯."
+})
+
+-- 👥 Replace these with actual admin UserIds to detect
+local adminUserIds = {
+    3606665012, -- Example UserId
+    1363894312,
+    411198659,
+    131141674
+}
+
+-- 📑 Settings Section
+MiscTab:CreateSection("🛡️ Anti-Admin Detection")
+
+-- 📋 Action Dropdown
+MiscTab:CreateDropdown({
+    Name = "Detection Action",
+    Options = {"Leave", "Warn", "None"},
+    CurrentOption = "Warn",
+    Flag = "antibandn",
+    Callback = function(selected)
+        adminAction = selected
+        Rayfield:Notify({
+            Title = "Anti-Admin",
+            Content = "Action set to: "..selected,
+            Duration = 4
+        })
+    end
+})
+
+-- 🔘 Enable/Disable Toggle
+MiscTab:CreateToggle({
+    Name = "Enable Detection",
+    CurrentValue = false,
+    Flag = "antiban",
+    Callback = function(state)
+        antiAdminEnabled = state
+        Rayfield:Notify({
+            Title = "Anti-Admin",
+            Content = state and "Anti-Admin detection enabled." or "Detection disabled.",
+            Duration = 4
+        })
+    end
+})
+
+-- 🛡️ Anti-Admin Detection Function
+local Players = game:GetService("Players")
+
+Players.PlayerAdded:Connect(function(player)
+    if not antiAdminEnabled then return end
+
+    if table.find(adminUserIds, player.UserId) then
+        print("[Anti-Admin] Detected admin user:", player.Name)
+
+        if adminAction == "Warn" then
+            Rayfield:Notify({
+                Title = "⚠️ Admin Detected!",
+                Content = "Admin "..player.Name.." joined the game!",
+                Duration = 8
+            })
+
+        elseif adminAction == "Leave" then
+            Rayfield:Notify({
+                Title = "⚠️ Admin Detected!",
+                Content = "Leaving the server in 2 seconds...",
+                Duration = 6
+            })
+            task.wait(2)
+            game.Players.LocalPlayer:Kick("Detected admin: "..player.Name)
+
+        elseif adminAction == "None" then
+            -- Do nothing
+        end
+    end
+end)
+
+local SettingsTab = Window:CreateTab("Settings", "settings")
+SettingsTab:CreateSection("⚙️ Configuration")
+SettingsTab:CreateParagraph({
+    Title = "📢 info",
+    Content = "this configuration area to save/Load your all doing in this hub ⛏️."
+})
+
+SettingsTab:CreateButton({
+    Name = "💾 Load Configuration",
+    Callback = function()
+        Rayfield:LoadConfiguration()
+        Rayfield:Notify({
+            Title = "✅ Loaded the configuration",
+            Content = "Your configuration has been Loaded successfully.",
+            Duration = 4
+        })
+    end
+})
+
+-- 📌 Version Check
 local function CheckForUpdate()
     local success, response = pcall(function()
-        return game:HttpGet(VersionURL)
+        return game:HttpGet("https://raw.githubusercontent.com/glitchstikers/Testscript-/main/Version.lua")
     end)
     if success and response then
-        local latest = response:match("^%s*(.-)%s*$")
-        if latest and latest~=CurrentVersion then
+        local LatestVersion = response:match("^%s*(.-)%s*$")
+        if LatestVersion and LatestVersion ~= CurrentVersion then
             Rayfield:Notify({
                 Title = "⚠️ UPDATE DETECTED!",
-                Content = "New version available: "..latest..". Please rejoin.",
+                Content = "New version available: "..LatestVersion..". Please rejoin.",
                 Duration = 10
             })
-            SaveVersion(latest)
-            Window:SetName(string.format("%s | %s | %s", HubName, GameName, latest))
+            SaveVersion(LatestVersion)
+            CurrentVersion = LatestVersion
+            Window:SetName(string.format("%s | %s | %s", CurrentName, CurrentGame, CurrentVersion))
         end
     else
         warn("⚠️ Failed to check for updates.")
     end
 end
-CheckForUpdate()
 
--- Loaded Notification
+task.spawn(function()
+    while true do
+        CheckForUpdate()
+        task.wait(30)
+    end
+end)
+
+-- 📢 Discord Join Reminder every 5 minutes
+task.spawn(function()
+    while true do
+        task.wait(300) -- 300 seconds = 5 minutes
+        Rayfield:Notify({
+            Title = "📢 Reminder",
+            Content = "Join our Discord server: discord.gg/yourlinkhere",
+            Duration = 7
+        })
+    end
+end)
+
+-- ✅ Loaded Notification
 Rayfield:Notify({
-    Title = "✅ "..HubName.." Loaded",
+    Title = "✅ "..CurrentName.." Loaded",
     Content = "All systems active and ready.",
     Duration = 5
 })
