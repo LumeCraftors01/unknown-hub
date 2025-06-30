@@ -159,7 +159,7 @@ end
 --! Load Rayfield
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 local Window = Rayfield:CreateWindow({
-    Name = "Delta Hub 🔐",
+    Name = "unknown hub 🔐",
     LoadingTitle = "Connecting...",
     LoadingSubtitle = "Authenticating...",
     ConfigurationSaving = {
@@ -188,6 +188,7 @@ MainTab:CreateInput({
     Name = "Enter Key",
     PlaceholderText = "Paste your Platoboost key",
     RemoveTextAfterFocusLost = false,
+        Flag = "Input1",
     Callback = function(input)
         _G.Key = input
         keyLabel:Set("Current Key: " .. input)
@@ -230,14 +231,6 @@ Setting:CreateToggle({
     Callback = function(v)
         notificationsEnabled = v
         Rayfield:Notify({ Title = "Notifications", Content = "Now " .. (v and "Enabled" or "Disabled"), Duration = 3 })
-    end
-})
-
-Setting:CreateButton({
-    Name = "💾 Save Settings",
-    Callback = function()
-        Rayfield:SaveConfiguration()
-        Rayfield:Notify({ Title = "Saved", Content = "Settings saved.", Duration = 3 })
     end
 })
 
