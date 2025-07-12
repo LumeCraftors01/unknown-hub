@@ -52,6 +52,7 @@ local BuyItem = Functions.BuyItem
 local TryCastPile = Functions.TryCastPile
 local MiningRemote = Events.MiningRemote
 local DialogueProgress = Events.DialogueProgress
+local player = game.Players.LocalPlayer
 
 -- 📌 Main Tab
 local MainTab = Window:CreateTab("Main", "home")
