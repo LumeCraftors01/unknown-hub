@@ -181,6 +181,55 @@ FarmTab:CreateToggle({
     end
 })
 
+-- 📌 Farm Tab
+local teleportTab = Window:CreateTab("Teleport", "Map")
+
+-- 🗺️ Teleport Locations
+local teleportLocations = {
+    ["Oreville"] = Vector3.new(1218.24, -2.38, 1036.68),
+    ["Glow Forest"] = Vector3.new(2840.52, 30.45, 743.44),
+    ["Cragpire"] = Vector3.new(4082.79, 6.79, 475.83),
+    ["Frostshard"] = Vector3.new(2582.50, 42.33, 3415.08),
+    ["Glimmergrove"] = Vector3.new(4194.71, 49.58, 1870.27),
+    ["Ashenreach"] = Vector3.new(-533.55, 2.67, -330.58),
+    ["Rustmere"] = Vector3.new(1382.81, 85.88, -1001.60),
+    ["Boat Station"] = Vector3.new(1547.21, 16.36, 1308.58),
+    ["Lighthouse"] = Vector3.new(20.06, 3.64, 1651.04),
+    ["Mini Atlantis"] = Vector3.new(4528.42, -2.24, 4176.88),
+}
+
+-- 🔘 Create a button for each teleport location
+for name, position in pairs(teleportLocations) do
+    teleportTab:CreateButton({
+        Name = "Teleport to " .. name,
+        Callback = function()
+            local character = player.Character or player.CharacterAdded:Wait()
+            local hrp = character:WaitForChild("HumanoidRootPart", 5)
+
+            if hrp then
+                hrp.CFrame = CFrame.new(position)
+                print("✅ Teleported to", name)
+
+                -- ✅ Notification after teleport
+                Rayfield:Notify({
+                    Title = "Teleport Success",
+                    Content = "You teleported to " .. name,
+                    Duration = 4, -- seconds
+                    Image = 4483362458, -- optional image ID
+                })
+            else
+                warn("❌ Could not find HumanoidRootPart!")
+                Rayfield:Notify({
+                    Title = "Teleport Failed",
+                    Content = "Couldn't find HumanoidRootPart",
+                    Duration = 4,
+                    Image = 0
+                })
+            end
+        end
+    })
+end
+
 -- 📌 Market Tab
 local MarketTab = Window:CreateTab("Market", "shopping-bag")
 
