@@ -330,23 +330,28 @@ local function getNil(name, class)
 end
 
 MiscTab:CreateButton({
-    Name = "⚡ Enchant Lightning Rune",
+    Name = "⚡ Teleport to Enchanting Tower",
     Callback = function()
-        local tool = getNil("Lightning Rune", "Tool")
-        if tool then
-            game.Players.LocalPlayer.EquipTool:InvokeServer(tool)
-            task.wait(3)
-            ReplicatedStorage.Remotes.Functions.TryEnchant:InvokeServer("Lightning Rune")
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart", 5)
+
+        local targetPosition = Vector3.new(2742.54, -230.86, 756.54)
+
+        if hrp then
+            hrp.CFrame = CFrame.new(targetPosition)
             Rayfield:Notify({
-                Title = "✅ Success",
-                Content = "Lightning Rune enchanted!",
-                Duration = 4
+                Title = "Teleported",
+                Content = "You have been teleported to Enchanting Tower!",
+                Duration = 3,
+                Image = 4483362458 -- optional
             })
         else
             Rayfield:Notify({
-                Title = "❌ Not Found",
-                Content = "Lightning Rune tool not found.",
-                Duration = 4
+                Title = "Teleport Failed",
+                Content = "HumanoidRootPart not found!",
+                Duration = 3,
+                Image = 0
             })
         end
     end
