@@ -102,7 +102,7 @@ MainTab:CreateParagraph({
 -----------------------
 -- 🌾 AutoFarm Tab
 -----------------------
-local AutoFarmTab = Window:CreateTab("🌾 AutoFarm", nil)
+local AutoFarmTab = Window:CreateTab("Farming", "bubbles")
 local autoFarmEnabled, autoFarmSpeed = false, 1
 local autoSellEnabled, autoSellSpeed = false, 1
 
@@ -174,7 +174,7 @@ end)
 -----------------------
 -- 💰 Sell Tab
 -----------------------
-local SellTab = Window:CreateTab("💰 Sell", nil)
+local SellTab = Window:CreateTab("Money Up", "circle-dollar-sign")
 
 SellTab:CreateButton({
 	Name = "🪙 Sell All Inventory",
@@ -191,7 +191,7 @@ SellTab:CreateButton({
 -----------------------
 -- 📦 Teleport Tab
 -----------------------
-local TeleportTab = Window:CreateTab("📦 Teleport", nil)
+local TeleportTab = Window:CreateTab("Teleport", "map")
 
 local function teleportTo(pos, name)
 	local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -221,7 +221,7 @@ TeleportTab:CreateButton({
 -----------------------
 -- 🙈 Hide UI Tab
 -----------------------
-local HideTab = Window:CreateTab("🙈 Hide UI", nil)
+local HideTab = Window:CreateTab("Hide UI", "eye-off")
 local hideNameTags = false
 local hideMoneyUI = false
 
@@ -269,7 +269,7 @@ HideTab:CreateToggle({
 -----------------------
 -- ⚙️ Settings Tab (Device Auto-Rotate)
 -----------------------
-local SettingsTab = Window:CreateTab("⚙️ Settings", nil)
+local SettingsTab = Window:CreateTab("Settings", "settings")
 local autoRotate = false
 
 SettingsTab:CreateToggle({
