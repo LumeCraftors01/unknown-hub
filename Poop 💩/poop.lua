@@ -235,7 +235,7 @@ HideTab:CreateToggle({
 })
 
 -- ⚙️ Settings Tab
-local SettingsTab = Window:CreateTab("Settings", "settings")
+local SettingsTab = Window:CreateTab("Setting", "settings")
 
 SettingsTab:CreateToggle({
 	Name = "📱 Auto-Rotate UI on Mobile",
