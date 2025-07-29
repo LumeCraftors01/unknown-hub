@@ -33,7 +33,7 @@ local Window = Rayfield:CreateWindow({
     
     ConfigurationSaving = {
       Enabled = true,
-      FolderName = Poop, 
+      FolderName = Slaptower4, 
       FileName = "unknown hub"
    },
 
@@ -78,7 +78,7 @@ MainTab:CreateParagraph({
     Content = "Use this at your own risk. We are not responsible for bans."
 })
 
-local finished = Window:CreateTab("Finished 🏁", 4483362458)
+local finished = Window:CreateTab("Finished", "BookmarkCheck")
 
 finished:CreateButton({
 	Name = "Finish Game",
@@ -96,7 +96,7 @@ finished:CreateButton({
 -----------------------
 -- ⚙️ Settings Tab (Device Auto-Rotate)
 -----------------------
-local SettingsTab = Window:CreateTab("⚙️ Settings", nil)
+local SettingsTab = Window:CreateTab("Settings", "Settings")
 local autoRotate = false
 
 SettingsTab:CreateToggle({
