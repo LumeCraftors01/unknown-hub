@@ -30,18 +30,18 @@ local Window = Rayfield:CreateWindow({
     ShowText = "Show",
     Icon = "hammer",
     Theme = "Dark",
-    
-    ConfigurationSaving = {
-      Enabled = true,
-      FolderName = Poop, 
-      FileName = "unknown hub"
-   },
 
-   Discord = {
-      Enabled = true, 
-      Invite = "noinvitelink", 
-      RememberJoins = true 
-   }
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "Poop",
+        FileName = "unknown hub"
+    },
+
+    Discord = {
+        Enabled = true,
+        Invite = "noinvitelink",
+        RememberJoins = true
+    }
 })
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -64,7 +64,6 @@ marker.Transparency = 0.5
 marker.BrickColor = BrickColor.new("Bright orange")
 marker.Parent = workspace
 
-
 -- 📌 Main Tab
 local MainTab = Window:CreateTab("Main", "home")
 MainTab:CreateParagraph({
@@ -81,7 +80,6 @@ MainTab:CreateButton({
         })
     end
 })
-
 MainTab:CreateButton({
     Name = "📋 Copy Discord Link",
     Callback = function()
@@ -93,15 +91,12 @@ MainTab:CreateButton({
         })
     end
 })
-
 MainTab:CreateParagraph({
     Title = "⚠️ Disclaimer",
     Content = "Use this at your own risk. We are not responsible for bans."
 })
 
------------------------
 -- 🌾 AutoFarm Tab
------------------------
 local AutoFarmTab = Window:CreateTab("Farming", "bubbles")
 local autoFarmEnabled, autoFarmSpeed = false, 1
 local autoSellEnabled, autoSellSpeed = false, 1
@@ -171,11 +166,8 @@ task.spawn(function()
 	end
 end)
 
------------------------
 -- 💰 Sell Tab
------------------------
 local SellTab = Window:CreateTab("Money Up", "circle-dollar-sign")
-
 SellTab:CreateButton({
 	Name = "🪙 Sell All Inventory",
 	Callback = function()
@@ -188,11 +180,8 @@ SellTab:CreateButton({
 	end
 })
 
------------------------
 -- 📦 Teleport Tab
------------------------
 local TeleportTab = Window:CreateTab("Teleport", "map")
-
 local function teleportTo(pos, name)
 	local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 	local hrp = character:WaitForChild("HumanoidRootPart")
@@ -210,7 +199,6 @@ TeleportTab:CreateButton({
 		teleportTo(bestSpotPos, "Best Spot")
 	end
 })
-
 TeleportTab:CreateButton({
 	Name = "🏠 Teleport to Spawn",
 	Callback = function()
@@ -218,44 +206,24 @@ TeleportTab:CreateButton({
 	end
 })
 
------------------------
 -- 🙈 Hide UI Tab
------------------------
 local HideTab = Window:CreateTab("Hide UI", "eye-off")
-local hideNameTags = false
-local hideMoneyUI = false
 
--- Hide Player Overhead Tags
 HideTab:CreateToggle({
 	Name = "🙉 Hide Overhead Player Tags",
 	CurrentValue = false,
 	Callback = function(val)
-		hideNameTags = val
-		Rayfield:Notify({
-			Title = "Tags",
-			Content = val and "Overhead tags hidden" or "Tags shown",
-			Duration = 2
-		})
 		for _, player in ipairs(Players:GetPlayers()) do
 			local tag = player:FindFirstChild("PlayerNameTag")
-			if tag then
-				tag.Enabled = not val
-			end
+			if tag then tag.Enabled = not val end
 		end
 	end
 })
 
--- Hide Money/Level UI
 HideTab:CreateToggle({
 	Name = "🙈 Hide Money/Level UI",
 	CurrentValue = false,
 	Callback = function(val)
-		hideMoneyUI = val
-		Rayfield:Notify({
-			Title = "UI",
-			Content = val and "Money/Level UI hidden" or "UI shown",
-			Duration = 2
-		})
 		local gui = LocalPlayer:FindFirstChild("PlayerGui")
 		if gui then
 			local moneyUI = gui:FindFirstChild("Money/LevelUI")
@@ -266,50 +234,21 @@ HideTab:CreateToggle({
 	end
 })
 
------------------------
--- ⚙️ Settings Tab (Device Auto-Rotate)
------------------------
+-- ⚙️ Settings Tab
 local SettingsTab = Window:CreateTab("Settings", "settings")
-local autoRotate = false
 
 SettingsTab:CreateToggle({
 	Name = "📱 Auto-Rotate UI on Mobile",
 	CurrentValue = false,
 	Callback = function(val)
 		autoRotate = val
-		Rayfield:Notify({
-			Title = "Device Rotation",
-			Content = val and "Auto-Rotate enabled" or "Disabled",
-			Duration = 2
-		})
 	end
 })
 
--- Handle Auto-Rotation
-if UserInputService.TouchEnabled then
-	local function onOrientationChange()
-		if autoRotate then
-			local gui = LocalPlayer:FindFirstChild("PlayerGui")
-			if gui then
-				for _, screenGui in pairs(gui:GetChildren()) do
-					if screenGui:IsA("ScreenGui") then
-						screenGui.ResetOnSpawn = false
-						screenGui.IgnoreGuiInset = true
-						screenGui.Rotation = (UserInputService:GetDeviceOrientation() == Enum.DeviceOrientation.LandscapeLeft) and 0 or 90
-					end
-				end
-			end
-		end
-	end
-
-	RunService.RenderStepped:Connect(onOrientationChange)
-end
-
-local SettingsTab = Window:CreateTab("Settings", "settings")
 SettingsTab:CreateSection("⚙️ Configuration")
 SettingsTab:CreateParagraph({
-    Title = "📢 info",
-    Content = "this configuration area to save/Load your all doing in this hub ⛏️."
+    Title = "📢 Info",
+    Content = "This configuration area saves/loads your hub settings ⛏️."
 })
 
 SettingsTab:CreateButton({
@@ -317,14 +256,31 @@ SettingsTab:CreateButton({
     Callback = function()
         Rayfield:LoadConfiguration()
         Rayfield:Notify({
-            Title = "✅ Loaded the configuration",
-            Content = "Your configuration has been Loaded successfully.",
+            Title = "✅ Loaded",
+            Content = "Configuration loaded successfully.",
             Duration = 4
         })
     end
 })
 
--- 📌 Version Check
+-- Auto-Rotate Handling
+if UserInputService.TouchEnabled then
+	RunService.RenderStepped:Connect(function()
+		if autoRotate then
+			local orientation = UserInputService:GetDeviceOrientation()
+			local gui = LocalPlayer:FindFirstChild("PlayerGui")
+			if gui then
+				for _, screenGui in pairs(gui:GetChildren()) do
+					if screenGui:IsA("ScreenGui") then
+						screenGui.Rotation = (orientation == Enum.DeviceOrientation.LandscapeLeft or orientation == Enum.DeviceOrientation.LandscapeRight) and 0 or 90
+					end
+				end
+			end
+		end
+	end)
+end
+
+-- Version Check
 local function CheckForUpdate()
     local success, response = pcall(function()
         return game:HttpGet("https://raw.githubusercontent.com/LumeCraftors01/unknown-hub/refs/heads/main/Poop%20%F0%9F%92%A9/Version.lua")
@@ -334,7 +290,7 @@ local function CheckForUpdate()
         if LatestVersion and LatestVersion ~= CurrentVersion then
             Rayfield:Notify({
                 Title = "⚠️ UPDATE DETECTED!",
-                Content = "New version available: "..LatestVersion..". Please rejoin.",
+                Content = "New version: "..LatestVersion..". Please rejoin.",
                 Duration = 10
             })
             SaveVersion(LatestVersion)
@@ -353,19 +309,19 @@ task.spawn(function()
     end
 end)
 
--- 📢 Discord Join Reminder every 5 minutes
+-- 📢 Discord Reminder
 task.spawn(function()
     while true do
-        task.wait(300) -- 300 seconds = 5 minutes
+        task.wait(300)
         Rayfield:Notify({
             Title = "📢 Reminder",
-            Content = "Join our Discord server: discord.gg/yourlinkhere",
+            Content = "Join our Discord: discord.gg/yourlinkhere",
             Duration = 7
         })
     end
 end)
 
--- ✅ Loaded Notification
+-- ✅ Ready Notification
 Rayfield:Notify({
     Title = "✅ "..CurrentName.." Loaded",
     Content = "All systems active and ready.",
