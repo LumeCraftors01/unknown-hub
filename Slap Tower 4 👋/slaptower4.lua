@@ -86,7 +86,7 @@ MainTab:CreateParagraph({
 })
 
 -- 🏁 Finish Tab
-local FinishedTab = Window:CreateTab("Finished", "BookmarkCheck")
+local FinishedTab = Window:CreateTab("Finished", "book-marked")
 FinishedTab:CreateButton({
 	Name = "🏁 Finish Game",
 	Callback = function()
@@ -101,7 +101,7 @@ FinishedTab:CreateButton({
 })
 
 -- ⚙️ Settings Tab (with Auto-Rotate)
-local SettingsTab = Window:CreateTab("Settings", "Settings")
+local SettingsTab = Window:CreateTab("Settings", "settings")
 local autoRotate = false
 
 SettingsTab:CreateToggle({
