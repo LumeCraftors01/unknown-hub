@@ -78,7 +78,7 @@ MainTab:CreateParagraph({
     Content = "Use this at your own risk. We are not responsible for bans."
 })
 
-local finished = Window:CreateTab("Finished", "BookmarkCheck")
+local finished = Window:CreateTab("Finished", "bookmark-check")
 
 finished:CreateButton({
 	Name = "Finish Game",
@@ -93,44 +93,6 @@ finished:CreateButton({
 	end,
 })
 
------------------------
--- ⚙️ Settings Tab (Device Auto-Rotate)
------------------------
-local SettingsTab = Window:CreateTab("Settings", "Settings")
-local autoRotate = false
-
-SettingsTab:CreateToggle({
-	Name = "📱 Auto-Rotate UI on Mobile",
-	CurrentValue = false,
-	Callback = function(val)
-		autoRotate = val
-		Rayfield:Notify({
-			Title = "Device Rotation",
-			Content = val and "Auto-Rotate enabled" or "Disabled",
-			Duration = 2
-		})
-	end
-})
-
--- Handle Auto-Rotation
-if UserInputService.TouchEnabled then
-	local function onOrientationChange()
-		if autoRotate then
-			local gui = LocalPlayer:FindFirstChild("PlayerGui")
-			if gui then
-				for _, screenGui in pairs(gui:GetChildren()) do
-					if screenGui:IsA("ScreenGui") then
-						screenGui.ResetOnSpawn = false
-						screenGui.IgnoreGuiInset = true
-						screenGui.Rotation = (UserInputService:GetDeviceOrientation() == Enum.DeviceOrientation.LandscapeLeft) and 0 or 90
-					end
-				end
-			end
-		end
-	end
-
-	RunService.RenderStepped:Connect(onOrientationChange)
-end
 
 local SettingsTab = Window:CreateTab("Settings", "settings")
 SettingsTab:CreateSection("⚙️ Configuration")
