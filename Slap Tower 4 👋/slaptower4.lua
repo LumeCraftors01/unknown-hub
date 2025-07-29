@@ -3,7 +3,7 @@ local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 -- Basic Info
 local CurrentName = "unknown Hub"
-local CurrentGame = "Poop 💩 [Early Access Release]"
+local CurrentGame = "Slap Tower 4 👋"
 local DefaultVersion = "v1.0"
 local VersionFile = "unknown_Version.txt"
 
