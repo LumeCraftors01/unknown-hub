@@ -202,63 +202,60 @@ TeleportTab:CreateButton({
 
 -- Hide UI Tab
 local HideTab = Window:CreateTab("Hide UI", "eye-off")
+local function HideOverhead()
+	local gui = LocalPlayer:FindFirstChild("PlayerGui")
+	if not gui then return end
+	local tag = gui:FindFirstChild("PlayerNameTag")
+	if tag then
+		local name = tag:FindFirstChild("PlayerNameLabel")
+		local level = tag:FindFirstChild("LevelNameLabel")
+		if name then name.Text = "???" end
+		if level then level.Text = "???" end
+	end
+end
+
+-- Function to hide Money UI
+local function HideMoneyUI()
+	local gui = LocalPlayer:FindFirstChild("PlayerGui")
+	if not gui then return end
+	local moneyUI = gui:FindFirstChild("Money/LevelUI")
+	if moneyUI then
+		local display = moneyUI:FindFirstChild("LevelDisplayUI")
+		if display then
+			local money = display:FindFirstChild("MoneyLabel")
+			if money and money:IsA("TextLabel") then
+				money.Text = "$999999"
+			end
+		end
+	end
+end
+
+-- Function to set all leaderstats to 999
+local function HideLeaderstats()
+	local stats = LocalPlayer:FindFirstChild("leaderstats")
+	if not stats then return end
+	for _, v in pairs({"BiggestPoop", "🔥", "Money"}) do
+		local stat = stats:FindFirstChild(v)
+		if stat and (stat:IsA("IntValue") or stat:IsA("NumberValue")) then
+			stat.Value = 999
+		end
+	end
+end
+
+-- 🟦 Create Buttons
 HideTab:CreateButton({
 	Name = "Hide Overhead UI",
-	Callback = function()
-		local overhead = PlayerGui:FindFirstChild("PlayerNameTag")
-		if overhead then
-			local name = overhead:FindFirstChild("PlayerNameLabel")
-			local level = overhead:FindFirstChild("LevelNameLabel")
-			if name and name:IsA("TextLabel") then
-				name.Text = "???"
-			end
-			if level and level:IsA("TextLabel") then
-				level.Text = "???"
-			end
-			Rayfield:Notify({
-				Title = "Overhead UI Hidden",
-				Content = "Player name and level are now secret.",
-				Duration = 3
-			})
-		end
-	end
+	Callback = HideOverhead,
 })
+
 HideTab:CreateButton({
 	Name = "Hide Money UI",
-	Callback = function()
-		local moneyUI = PlayerGui:FindFirstChild("MoneyLevelUI")
-		if moneyUI then
-			local levelDisplay = moneyUI:FindFirstChild("LevelDisplayUI")
-			local moneyLabel = levelDisplay and levelDisplay:FindFirstChild("MoneyLabel")
-			if moneyLabel and moneyLabel:IsA("TextLabel") then
-				moneyLabel.Text = "$999999"
-			end
-			Rayfield:Notify({
-				Title = "Money UI Hidden",
-				Content = "Money text changed to $999999.",
-				Duration = 3
-			})
-		end
-	end
+	Callback = HideMoneyUI,
 })
+
 HideTab:CreateButton({
-	Name = "Hide Leaderstats",
-	Callback = function()
-		local stats = LocalPlayer:FindFirstChild("leaderstats")
-		if stats then
-			for _, stat in ipairs({"🔥", "Money", "BiggestPoop"}) do
-				local s = stats:FindFirstChild(stat)
-				if s and (s:IsA("IntValue") or s:IsA("NumberValue")) then
-					s.Value = 999
-				end
-			end
-			Rayfield:Notify({
-				Title = "Leaderstats Updated",
-				Content = "🔥, Money, and BiggestPoop set to 999.",
-				Duration = 3
-			})
-		end
-	end
+	Name = "Set Leaderstats to 999",
+	Callback = HideLeaderstats,
 })
 
 -- Settings Tab
