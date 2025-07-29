@@ -49,6 +49,7 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 -- Teleport Positions
 local bestSpotPos = Vector3.new(100, -5.75, 3.693)
@@ -209,29 +210,72 @@ TeleportTab:CreateButton({
 -- 🙈 Hide UI Tab
 local HideTab = Window:CreateTab("Hide UI", "eye-off")
 
-HideTab:CreateToggle({
-	Name = "🙉 Hide Overhead Player Tags",
-	CurrentValue = false,
-	Callback = function(val)
-		for _, player in ipairs(Players:GetPlayers()) do
-			local tag = player:FindFirstChild("PlayerNameTag")
-			if tag then tag.Enabled = not val end
+-- 🧠 BUTTON: Hide Overhead UI (PlayerNameTag)
+HideTab:CreateButton({
+	Name = "Hide Overhead UI",
+	Callback = function()
+		local overhead = PlayerGui:FindFirstChild("PlayerNameTag")
+		if overhead then
+			local name = overhead:FindFirstChild("PlayerNameLabel")
+			local level = overhead:FindFirstChild("LevelNameLabel")
+
+			if name and name:IsA("TextLabel") then
+				name.Text = "???"
+			end
+			if level and level:IsA("TextLabel") then
+				level.Text = "???"
+			end
+
+			Rayfield:Notify({
+				Title = "Overhead UI Hidden",
+				Content = "Player name and level are now secret.",
+				Duration = 3,
+			})
 		end
-	end
+	end,
 })
 
-HideTab:CreateToggle({
-	Name = "🙈 Hide Money/Level UI",
-	CurrentValue = false,
-	Callback = function(val)
-		local gui = LocalPlayer:FindFirstChild("PlayerGui")
-		if gui then
-			local moneyUI = gui:FindFirstChild("Money/LevelUI")
-			if moneyUI then
-				moneyUI.Enabled = not val
+-- 💰 BUTTON: Hide Money UI (MoneyLabel)
+HideTab:CreateButton({
+	Name = "Hide Money UI",
+	Callback = function()
+		local moneyUI = PlayerGui:FindFirstChild("Money/LevelUI")
+		if moneyUI then
+			local levelDisplay = moneyUI:FindFirstChild("LevelDisplayUI")
+			local moneyLabel = levelDisplay and levelDisplay:FindFirstChild("MoneyLabel")
+			if moneyLabel and moneyLabel:IsA("TextLabel") then
+				moneyLabel.Text = "$999999"
 			end
+
+			Rayfield:Notify({
+				Title = "Money UI Hidden",
+				Content = "Money text changed to $999999.",
+				Duration = 3,
+			})
 		end
-	end
+	end,
+})
+
+-- 🏆 BUTTON: Hide Leaderstats (Set to 999)
+HideTab:CreateButton({
+	Name = "Hide Leaderstats",
+	Callback = function()
+		local stats = Player:FindFirstChild("leaderstats")
+		if stats then
+			for _, stat in ipairs({"🔥", "Money", "BiggestPoop"}) do
+				local s = stats:FindFirstChild(stat)
+				if s and (s:IsA("IntValue") or s:IsA("NumberValue")) then
+					s.Value = 999
+				end
+			end
+
+			Rayfield:Notify({
+				Title = "Leaderstats Updated",
+				Content = "🔥, Money, and BiggestPoop set to 999.",
+				Duration = 3,
+			})
+		end
+	end,
 })
 
 -- ⚙️ Settings Tab
