@@ -154,7 +154,7 @@ SettingsTab:CreateButton({
 -- 📌 Version Check
 local function CheckForUpdate()
     local success, response = pcall(function()
-        return game:HttpGet("https://raw.githubusercontent.com/LumeCraftors01/unknown-hub/refs/heads/main/Poop%20%F0%9F%92%A9/Version.lua")
+        return game:HttpGet("https://raw.githubusercontent.com/LumeCraftors01/unknown-hub/refs/heads/main/Slap%20Tower%204%20%F0%9F%91%8B/Version.lua")
     end)
     if success and response then
         local LatestVersion = response:match("^%s*(.-)%s*$")
