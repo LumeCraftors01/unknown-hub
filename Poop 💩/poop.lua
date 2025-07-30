@@ -257,7 +257,7 @@ end
 --// VERSION CHECKER
 local function CheckForUpdate()
     local success, response = pcall(function()
-        return game:HttpGet("https://raw.githubusercontent.com/LumeCraftors01/unknown-hub/main/Version.lua")
+        return game:HttpGet("https://raw.githubusercontent.com/LumeCraftors01/unknown-hub/refs/heads/main/Poop%20%F0%9F%92%A9/Version.lua")
     end)
     if success and response then
         local newVersion = response:match("%S+")
