@@ -1,13 +1,13 @@
---// Load Rayfield Library
+--// Load Rayfield UI Library
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
---// Basic Metadata
+--// Metadata
 local CurrentName = "unknown Hub"
 local CurrentGame = "Poop 💩 [Early Access Release]"
 local DefaultVersion = "v1.0"
 local VersionFile = "unknown_Version.txt"
 
---// Load & Save Version
+--// Version Handling
 local function LoadVersion()
     if isfile(VersionFile) then
         return readfile(VersionFile):match("^%s*(.-)%s*$") or DefaultVersion
@@ -19,7 +19,7 @@ local function SaveVersion(version)
 end
 local CurrentVersion = LoadVersion()
 
---// UI Window
+--// Create Rayfield Window
 local Window = Rayfield:CreateWindow({
     Name = string.format("%s | %s | %s", CurrentName, CurrentGame, CurrentVersion),
     LoadingTitle = "Loading "..CurrentName,
@@ -30,7 +30,7 @@ local Window = Rayfield:CreateWindow({
     ConfigurationSaving = {
         Enabled = true,
         FolderName = "PoopHub",
-        FileName = "config"
+        FileName = CurrentGame:gsub("%s+", "_").."_config"
     },
     Discord = {
         Enabled = true,
@@ -47,6 +47,11 @@ local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+
+--// Remote References
+local PoopChargeStart = ReplicatedStorage:WaitForChild("PoopChargeStart")
+local PoopEvent = ReplicatedStorage:WaitForChild("PoopEvent")
+local PoopResponseChosen = ReplicatedStorage:WaitForChild("PoopResponseChosen")
 
 --// Settings
 local autoFarmEnabled, autoSellEnabled, autoRotate = false, false, false
@@ -66,7 +71,7 @@ if not workspace:FindFirstChild("BestSpotMarker") then
     marker.Parent = workspace
 end
 
---// Teleport Helper
+--// Teleport Utility
 local function teleportTo(pos, name)
     local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local hrp = char:WaitForChild("HumanoidRootPart")
@@ -77,7 +82,6 @@ end
 --// MAIN TAB
 local MainTab = Window:CreateTab("Main", "info")
 MainTab:CreateParagraph({ Title = "Information 📚", Content = "Easy and enjoyable experience 🍫." })
-
 MainTab:CreateButton({
     Name = "ℹ️ About",
     Icon = "info",
@@ -85,7 +89,6 @@ MainTab:CreateButton({
         Rayfield:Notify({ Title = "About", Content = CurrentName.." for "..CurrentGame, Duration = 5 })
     end
 })
-
 MainTab:CreateButton({
     Name = "📋 Copy Discord Link",
     Icon = "clipboard",
@@ -94,11 +97,11 @@ MainTab:CreateButton({
         Rayfield:Notify({ Title = "Copied", Content = "Discord link copied!", Duration = 4 })
     end
 })
-
 MainTab:CreateParagraph({ Title = "⚠️ Disclaimer", Content = "Use at your own risk. We are not responsible for bans." })
 
 --// FARMING TAB
 local FarmTab = Window:CreateTab("Farming", "leaf")
+FarmTab:CreateSection("AutoFarm Controls")
 
 FarmTab:CreateToggle({
     Name = "Enable AutoFarm",
@@ -110,8 +113,8 @@ FarmTab:CreateToggle({
         task.spawn(function()
             while autoFarmEnabled do
                 task.wait(autoFarmSpeed)
-                ReplicatedStorage:WaitForChild("PoopChargeStart"):FireServer()
-                ReplicatedStorage:WaitForChild("PoopEvent"):FireServer(1)
+                PoopChargeStart:FireServer()
+                PoopEvent:FireServer(1)
             end
         end)
     end
@@ -125,6 +128,7 @@ FarmTab:CreateSlider({
     CurrentValue = autoFarmSpeed,
     Callback = function(val)
         autoFarmSpeed = val
+        Rayfield:Notify({ Title = "Speed Updated", Content = "AutoFarm speed set to "..val, Duration = 2 })
     end
 })
 
@@ -138,7 +142,7 @@ FarmTab:CreateToggle({
         task.spawn(function()
             while autoSellEnabled do
                 task.wait(autoSellSpeed)
-                ReplicatedStorage:WaitForChild("PoopResponseChosen"):FireServer("2. [I want to sell my inventory.]")
+                PoopResponseChosen:FireServer("2. [I want to sell my inventory.]")
             end
         end)
     end
@@ -152,6 +156,7 @@ FarmTab:CreateSlider({
     CurrentValue = autoSellSpeed,
     Callback = function(val)
         autoSellSpeed = val
+        Rayfield:Notify({ Title = "Speed Updated", Content = "AutoSell speed set to "..val, Duration = 2 })
     end
 })
 
@@ -161,7 +166,7 @@ SellTab:CreateButton({
     Name = "🪙 Sell All Inventory",
     Icon = "coin",
     Callback = function()
-        ReplicatedStorage:WaitForChild("PoopResponseChosen"):FireServer("2. [I want to sell my inventory.]")
+        PoopResponseChosen:FireServer("2. [I want to sell my inventory.]")
         Rayfield:Notify({ Title = "Sold!", Content = "Inventory sold.", Duration = 2 })
     end
 })
@@ -173,7 +178,6 @@ TeleportTab:CreateButton({
     Icon = "navigation",
     Callback = function() teleportTo(bestSpotPos, "Best Spot") end
 })
-
 TeleportTab:CreateButton({
     Name = "🏠 Teleport to Spawn",
     Icon = "home",
@@ -182,7 +186,6 @@ TeleportTab:CreateButton({
 
 --// HIDE UI TAB
 local HideTab = Window:CreateTab("Hide UI", "eye-off")
-
 HideTab:CreateButton({
     Name = "🙈 Hide Overhead UI",
     Icon = "eye-off",
@@ -197,7 +200,6 @@ HideTab:CreateButton({
         Rayfield:Notify({ Title = "Overhead Hidden", Content = "Name and level tags hidden.", Duration = 4 })
     end
 })
-
 HideTab:CreateButton({
     Name = "💸 Hide Money UI",
     Icon = "dollar-sign",
@@ -210,7 +212,6 @@ HideTab:CreateButton({
         Rayfield:Notify({ Title = "Money UI Hidden", Content = "Money display changed.", Duration = 4 })
     end
 })
-
 HideTab:CreateButton({
     Name = "📊 Set Leaderstats to 999",
     Icon = "trending-up",
@@ -238,7 +239,7 @@ SettingsTab:CreateToggle({
     end
 })
 
---// Mobile UI Rotate
+--// Mobile Auto-Rotate Handler
 if UserInputService.TouchEnabled then
     RunService.RenderStepped:Connect(function()
         if autoRotate then
@@ -261,7 +262,12 @@ local function CheckForUpdate()
     if success and response then
         local newVersion = response:match("%S+")
         if newVersion and newVersion ~= CurrentVersion then
-            Rayfield:Notify({ Title = "⚠️ Update Detected", Content = "New version: "..newVersion, Duration = 6, Image = "alert-circle" })
+            Rayfield:Notify({
+                Title = "⚠️ Update Detected",
+                Content = "New version: "..newVersion,
+                Duration = 6,
+                Image = "alert-circle"
+            })
             SaveVersion(newVersion)
             CurrentVersion = newVersion
             Window:SetName(string.format("%s | %s | %s", CurrentName, CurrentGame, CurrentVersion))
@@ -269,7 +275,6 @@ local function CheckForUpdate()
     end
 end
 
---// Update Check Loop
 task.spawn(function()
     while true do
         task.wait(30)
@@ -281,9 +286,19 @@ end)
 task.spawn(function()
     while true do
         task.wait(300)
-        Rayfield:Notify({ Title = "📢 Reminder", Content = "Join our Discord: discord.gg/yourlinkhere", Duration = 7, Image = "bell" })
+        Rayfield:Notify({
+            Title = "📢 Reminder",
+            Content = "Join our Discord: discord.gg/yourlinkhere",
+            Duration = 7,
+            Image = "bell"
+        })
     end
 end)
 
 --// Final Notification
-Rayfield:Notify({ Title = "✅ "..CurrentName.." Loaded", Content = "All systems active!", Duration = 5, Image = "check-circle" })
+Rayfield:Notify({
+    Title = "✅ "..CurrentName.." Loaded",
+    Content = "All systems active!",
+    Duration = 5,
+    Image = "check-circle"
+})
