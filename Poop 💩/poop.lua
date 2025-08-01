@@ -34,7 +34,7 @@ local Window = Rayfield:CreateWindow({
     },
     Discord = {
         Enabled = true,
-        Invite = "noinvitelink",
+        Invite = "https://discord.gg/mMrKkvGq",
         RememberJoins = true
     },
     KeySystem = false
@@ -93,7 +93,7 @@ MainTab:CreateButton({
     Name = "📋 Copy Discord Link",
     Icon = "clipboard",
     Callback = function()
-        setclipboard("https://discord.gg/yourlinkhere")
+        setclipboard("https://discord.gg/mMrKkvGq")
         Rayfield:Notify({ Title = "Copied", Content = "Discord link copied!", Duration = 4 })
     end
 })
@@ -288,7 +288,7 @@ task.spawn(function()
         task.wait(300)
         Rayfield:Notify({
             Title = "📢 Reminder",
-            Content = "Join our Discord: discord.gg/yourlinkhere",
+            Content = "Join our Discord: discord.gg/mMrKkvGq",
             Duration = 7,
             Image = "bell"
         })
