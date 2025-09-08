@@ -1,6 +1,3 @@
--- 🌌 Unknown Hub | Auto Collector + Version System
--- ✅ Undetectable, Smooth Teleport, Discord Reminders, Version Checker
-
 -- Load Rayfield UI Library
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -86,7 +83,7 @@ MainTab:CreateParagraph({
 local FarmTab = Window:CreateTab("Auto Farm", "pickaxe")
 
 local enabled = false
-local loopDelay = 0.1
+local loopDelay = 0.05
 local walkSpeedBoost = 150
 local collected = {}
 
@@ -129,7 +126,7 @@ local function collectTool(tool)
     if collected[tool] then return end
     collected[tool] = true
 
-    task.delay(3, function() -- wait 3s after spawn
+    task.delay(1, function() -- wait 3s after spawn
         if not enabled then return end
         local root = getRoot()
         local handle = tool:FindFirstChild("Handle")
