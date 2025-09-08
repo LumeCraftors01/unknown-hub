@@ -1,13 +1,16 @@
+-- 🌌 Unknown Hub | Auto Collector + Version System
+-- ✅ Undetectable, Smooth Teleport, Discord Reminders, Version Checker
+
 -- Load Rayfield UI Library
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
--- 📌 Basic Info
+-- 📌 Hub Info
 local HUB_NAME     = "Unknown Hub"
 local GAME_NAME    = "Stud Collecting Simulator ◻️"
 local DEFAULT_VER  = "v1.0"
 local VERSION_FILE = "unknown_Version.txt"
 
--- 📂 Version Storage
+-- 📂 Version System
 local function LoadVersion()
     if isfile(VERSION_FILE) then
         return (readfile(VERSION_FILE):match("^%s*(.-)%s*$") or DEFAULT_VER)
@@ -32,8 +35,8 @@ local Window = Rayfield:CreateWindow({
 
     ConfigurationSaving = {
         Enabled = true,
-        FolderName = "studcs",
-        FileName = "unknown hub"
+        FolderName = "UnknownHub",
+        FileName = "Config"
     },
 
     Discord = {
@@ -48,7 +51,7 @@ local MainTab = Window:CreateTab("Main", "home")
 
 MainTab:CreateParagraph({
     Title = "📚 Information",
-    Content = "Enjoy your experience with ease 🍫."
+    Content = "Welcome to "..HUB_NAME.." — fast, safe, and easy 🍫."
 })
 
 MainTab:CreateButton({
@@ -56,7 +59,7 @@ MainTab:CreateButton({
     Callback = function()
         Rayfield:Notify({
             Title = "ℹ️ About",
-            Content = HUB_NAME.." for "..GAME_NAME.." — smooth, safe, and easy 🎉",
+            Content = HUB_NAME.." for "..GAME_NAME.." — smooth and simple 🎉",
             Duration = 5
         })
     end
@@ -68,7 +71,7 @@ MainTab:CreateButton({
         setclipboard("https://discord.gg/yourlinkhere")
         Rayfield:Notify({
             Title = "📋 Copied",
-            Content = "Discord invite link copied to clipboard.",
+            Content = "Discord link copied to clipboard.",
             Duration = 4
         })
     end
@@ -79,20 +82,13 @@ MainTab:CreateParagraph({
     Content = "Use at your own risk. We are not responsible for bans."
 })
 
--- ========================= FarmTab TAB =========================
-local FarmTab = Window:CreateTab("Main", "Pickaxe")
+-- ========================= FARM TAB =========================
+local FarmTab = Window:CreateTab("Auto Farm", "pickaxe")
 
--- ========================= AUTO COLLECTOR =========================
 local enabled = false
 local loopDelay = 0.1
 local walkSpeedBoost = 150
-local collected = {} -- prevent double collection
-
--- Skip specific Y positions
-local skipY = {
-    [56.88] = true, [58.44] = true,
-    [62.05] = true, [61.11] = true
-}
+local collected = {}
 
 -- ✅ Fire ProximityPrompt
 local function firePrompt(prompt)
@@ -121,29 +117,23 @@ local function smoothTeleport(root, targetPos)
     end
 end
 
--- ✅ Get Root Part
+-- ✅ Get Player Root
 local function getRoot()
     local plr = game.Players.LocalPlayer
     local char = plr.Character or plr.CharacterAdded:Wait()
     return char:WaitForChild("HumanoidRootPart")
 end
 
--- ✅ Collect Tool
+-- ✅ Collector
 local function collectTool(tool)
     if collected[tool] then return end
     collected[tool] = true
 
-    task.delay(3, function() -- delay to avoid instant grab
+    task.delay(3, function() -- wait 3s after spawn
         if not enabled then return end
         local root = getRoot()
         local handle = tool:FindFirstChild("Handle")
         if not handle then return end
-
-        local yPos = math.round(handle.Position.Y*100)/100
-        if skipY[yPos] then
-            print("⏭️ Skipped tool at Y:", yPos)
-            return
-        end
 
         for _, prompt in ipairs(tool:GetDescendants()) do
             if prompt:IsA("ProximityPrompt") then
@@ -183,7 +173,7 @@ FarmTab:CreateSlider({
     Callback = function(v) loopDelay = v end,
 })
 
--- Listen for new tools
+-- Watch new tools
 workspace.ChildAdded:Connect(function(child)
     if child:IsA("Tool") then
         collectTool(child)
@@ -250,7 +240,7 @@ end)
 
 -- ========================= REMINDERS =========================
 task.spawn(function()
-    while task.wait(300) do -- every 5 minutes
+    while task.wait(300) do
         Rayfield:Notify({
             Title = "📢 Reminder",
             Content = "Join our Discord: discord.gg/yourlinkhere",
@@ -262,6 +252,6 @@ end)
 -- ========================= LOADED NOTIFICATION =========================
 Rayfield:Notify({
     Title = "✅ "..HUB_NAME.." Loaded",
-    Content = "All systems active. Enjoy!",
+    Content = "All systems active. Enjoy farming ⚡",
     Duration = 5
 })
