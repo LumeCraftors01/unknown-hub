@@ -219,7 +219,7 @@ SettingsTab:CreateButton({
 -- ========================= VERSION CHECKER =========================
 local function CheckForUpdate()
     local success, response = pcall(function()
-        return game:HttpGet("https://raw.githubusercontent.com/glitchstikers/Testscript-/main/Version.lua")
+        return game:HttpGet("https://raw.githubusercontent.com/LumeCraftors01/unknown-hub/refs/heads/main/Stud%20Collecting%20Simulator%20%E2%97%BB%EF%B8%8F/version.lua")
     end)
 
     if success and response then
