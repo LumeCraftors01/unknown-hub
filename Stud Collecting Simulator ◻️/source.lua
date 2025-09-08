@@ -79,6 +79,9 @@ MainTab:CreateParagraph({
     Content = "Use at your own risk. We are not responsible for bans."
 })
 
+-- ========================= FarmTab TAB =========================
+local FarmTab = Window:CreateTab("Main", "Pickaxe")
+
 -- ========================= AUTO COLLECTOR =========================
 local enabled = false
 local loopDelay = 0.1
@@ -156,7 +159,7 @@ local function collectTool(tool)
 end
 
 -- Toggle
-MainTab:CreateToggle({
+FarmTab:CreateToggle({
     Name = "⚡ Enable Auto Collector",
     CurrentValue = false,
     Flag = "AutoCollectorToggle",
@@ -170,7 +173,7 @@ MainTab:CreateToggle({
 })
 
 -- Speed Slider
-MainTab:CreateSlider({
+FarmTab:CreateSlider({
     Name = "⏱️ Collection Speed (lower = faster)",
     Range = {0.05, 1},
     Increment = 0.05,
